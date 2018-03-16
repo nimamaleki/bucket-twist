@@ -1,0 +1,23 @@
+{
+  "name": "bucket_twist",
+  "version": "0.0.1",
+  "description": "Bucket Twist is a cross-platform mobile application that lets users keep and share their bucket list ideas and also get inspired by others’. It is aimed at people who seek interesting and adventurous lives.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "author": "nima.maleki92@gmail.com",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "connect-phonegap": "^0.24.9",
+    "ejs": "^2.5.7",
+    "express": "^4.16.2",
+    "mongodb": "^3.0.4",
+    "nodemon": "^1.17.1",
+    "onsenui": "^2.9.2",
+    "path": "^0.12.7",
+    "phonegap": "^8.0.0"
+  }
+}

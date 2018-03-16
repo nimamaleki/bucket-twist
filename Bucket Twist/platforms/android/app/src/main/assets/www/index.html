@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <meta name="viewport" content="initial-scale=1, width=device-width, height=device-height, viewport-fit=cover">
+    <meta http-equiv="Content-Security-Policy" content="default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'">
+
+    <link rel="stylesheet" href="css/my.css">
+
+    <link rel="stylesheet" href="css/OnsenUI/onsenui.css">
+    <link rel="stylesheet" href="css/OnsenUI/onsen-css-components.min.css">
+    <script src="js/OnsenUI/onsenui.min.js"></script>
+    
+    <link rel="stylesheet" href="css/fonts/maven-pro.css">
+    <link rel="stylesheet" href="css/fonts/fira-sans.css">
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/jquery-ui.min.js"></script>
+    <script src="js/touch-pouch.min.js"></script>
+   
+    <title>Bucket Twist</title>
+</head>
+
+<body>
+
+<script type="text/javascript" src="cordova.js"></script>
+<script type="text/javascript" src="js/index.js"></script>
+
+
+<script>
+  ons.platform.select('ios');
+</script>
+<script type="text/javascript">
+  function onDeviceReady() {
+    // Now safe to use the PhoneGap API
+    navigator.splashscreen.hide();
+    StatusBar.styleLightContent();
+}
+document.addEventListener("deviceready", onDeviceReady, false);
+</script>
+
+<ons-page>
+
+  <ons-tabbar position="auto">
+    <ons-tab page="settings.html" label="Settings" icon="fa-cog" badge="" >
+    </ons-tab>    
+    <ons-tab page="search.html" label="Search" icon="fa-search" badge="" >
+    </ons-tab>
+    <ons-tab page="feed.html" label="Explore" icon="fa-globe" active>
+    </ons-tab>
+    <ons-tab page="bucket.html" label="Bucket" icon="fa-list-alt">
+    </ons-tab>
+    <ons-tab page="newidea.html" label="New Idea" icon="fa-plus-circle">
+    </ons-tab>
+  </ons-tabbar>
+</ons-page>
+
+<template id="settings.html">
+  <ons-page id="settings">
+    <p style="text-align: center;">
+      This is the settings page.
+    </p>
+  </ons-page>
+</template>
+
+<template id="search.html">
+  <ons-page id="search">
+  <ons-toolbar>
+    <div class="center thick-toolbar" align="center">Search</div>
+  </ons-toolbar>
+  <ons-card>
+        <ons-row><ons-col>
+          <ons-search-input id="search-input" maxlength="20" placeholder="Search for an idea..." style="width: 100%"></ons-search-input>
+        </ons-col></ons-row>
+    </ons-card>
+    <div id="searchResultsCardsHolder"></div>
+  </ons-page>
+</template>
+
+<template id="feed.html">
+  <ons-page id="feed">
+  <ons-toolbar>
+    <div class="center thick-toolbar" align="center">Explore</div>
+  </ons-toolbar>
+  <ons-pull-hook id="pull-hook-feed" height="96px" threshold-height="130px">
+    <ons-icon icon="fa-arrow-down"></ons-icon>
+  </ons-pull-hook>  
+  
+  <div id="feedCardsHolder"></div>
+
+  </ons-page>
+</template>
+
+<template id="bucket.html">
+  <ons-page id="bucket">
+  <ons-toolbar>
+    <div class="center thick-toolbar" align="center">Bucket Twist</div>
+  </ons-toolbar>
+<!--
+  <h1>Rearrange by dragging the list</h1>
+
+
+    <ul id="sortableBucketList">  
+        <li class="item-1">Item 1</li>  
+        <li class="item-2">Item 2</li>  
+        <li class="item-3">Item 3</li>  
+        <li class="item-4">Item 4</li>  
+        <li class="item-5">Item 5</li>  
+    </ul>  
+  -->
+    <ons-pull-hook id="pull-hook-bucket" height="96px" threshold-height="130px">
+    <ons-icon icon="fa-arrow-down"></ons-icon>
+  </ons-pull-hook>  
+  
+  <div id="bucketCardsHolder"></div> 
+
+  </ons-page>
+</template>
+
+<template id="newidea.html">
+  <ons-page id="newIdea">
+  <ons-toolbar>
+    <div class="center thick-toolbar" align="center">New Idea</div>
+  </ons-toolbar>
+    <ons-card>
+        <ons-row><ons-col>
+        <textarea class="textarea" rows="10" style="width:100%" maxlength="150" placeholder="Life is short. Do something you always wanted to do..."></textarea>
+        </ons-col></ons-row>
+        <ons-row><ons-col>
+        <br>
+        <div align="right" class="right right-label">
+        <ons-icon icon="fa-check-circle" size="3x" style="color: green;" class="right-icon"></ons-icon>
+        </div>
+        </ons-col align="right"></ons-row>
+    </ons-card>
+  </ons-page>
+</template>
+
+<script id="main functions" type="text/javascript">
+  document.addEventListener('prechange', function(event) {
+    document.querySelector('ons-toolbar .center')
+      .innerHTML = event.tabItem.getAttribute('label');
+  });
+  </script>
+
+  </body>
+  <script type="text/javascript">
+  window.onload = function what(){
+
+  //Variable Initialization
+
+  var base_url = "http://192.168.1.4:55555/";
+  //var base_url = "http://localhost:55555/";
+  var search_parameter = '';
+  var username = "mlk_nima";
+
+
+  var divCardsSearch = document.getElementById('searchResultsCardsHolder');
+  var divCardsFeed = document.getElementById('feedCardsHolder');
+  var divCardsBucket = document.getElementById('bucketCardsHolder');
+  app.initialize();
+  refreshTheFeed();
+  getUserIdeas(username);
+
+  //Utility functions
+
+  var objectIdFromDate = function (date) {
+    return Math.floor(date.getTime() / 1000).toString(16) + "0000000000000000";
+  };
+
+  var dateFromObjectId = function (objectId) {
+    return new Date(parseInt(objectId.substring(0, 8), 16) * 1000);
+  };
+
+  //Networking functions
+
+  function refreshTheFeed(){
+    $.ajax({
+    url: base_url + "ideas",
+    type: 'GET',
+    dataType: 'json',
+    success: function(data){ 
+              divCardsFeed.innerHTML = '';
+              for (var i = 0; i < data.length; i++){      
+               divCardsFeed.innerHTML = divCardsFeed.innerHTML + "<ons-row><ons-card style='width: 100%'><p class='uesrnameContainer'>@"+data[i]['author']+"</p><div class='content'><p class='ideaContainer'>"+data[i]["idea"]+"</p><p class='timestampContainer'>"+dateFromObjectId(data[i]["_id"])+"</p></ons-row><ons-row><ons-col><ons-button modifier='quiet'><ons-icon icon='fa-heart' style='color: gray;' class='left-icon'></ons-button>"+data[i]["likes"]+"</ons-col><ons-col><div align='right'><ons-button modifier='quiet'><ons-icon icon='fa-check-circle' style='color: gray;' class='right-icon'></ons-icon></ons-button></div></ons-col></ons-row></div></ons-card>";
+               
+              }
+              
+              return done;
+    },
+    error: function(data) {
+              //console.log('couldn\'t load news, check the api');
+              //window.location.href = "/errorrrrr";
+    }
+      
+    }); 
+  }
+           
+  function searchForKeyword(search_parameter){
+
+    $.ajax({
+    url: base_url + "search",
+    type: 'GET',
+    data: { 
+            search_parameter: search_parameter
+          },
+    dataType: 'json',
+    success: function(data){
+              if(data.length>0){   
+                for (var i = 0; i < data.length; i++){ 
+                divCardsSearch.innerHTML = '';
+                 divCardsSearch.innerHTML = divCardsSearch.innerHTML + "<ons-row><ons-card style='width: 100%'><p class='uesrnameContainer'>@"+data[i]['author']+"</p><div class='content'><p class='ideaContainer'>"+data[i]["idea"]+"</p><p class='timestampContainer'>"+dateFromObjectId(data[i]["_id"])+"</p></ons-row><ons-row><ons-col><ons-button modifier='quiet'><ons-icon icon='fa-heart' style='color: gray;' class='left-icon'></ons-button>"+data[i]["likes"]+"</ons-col><ons-col><div align='right'><ons-button modifier='quiet'><ons-icon icon='fa-check-circle' style='color: gray;' class='right-icon'></ons-icon></ons-button></div></ons-col></ons-row></div></ons-card>";
+                } }
+                else{
+
+                  divCardsSearch.innerHTML = '<p align="center">No results found...</p>';
+                }          
+    },
+    error: function(data) {
+                //console.log('couldn\'t load news, check the api');
+                //window.location.href = "/errorrrrr";
+    }
+        
+    });
+  }
+
+  function getUserIdeas(username){
+
+    $.ajax({
+    url: base_url + "ideas/user",
+    type: 'GET',
+    data: { 
+            username: username
+          },
+    dataType: 'json',
+    success: function(data){
+              if(data.length>0){ 
+                divCardsBucket.innerHTML = ''; 
+                for (var i = 0; i < data.length; i++){
+                 divCardsBucket.innerHTML = divCardsBucket.innerHTML + "<ons-row><ons-card style='width: 100%'><ons-row><ons-col><p class='uesrnameContainer'>@"+data[i]['author']+"</p></ons-col><ons-col vertical-align='center'><div align='right'><ons-button modifier='quiet' class='handle'><ons-icon icon='ion-grid' style='color: gray;' class='right-icon'></ons-icon></ons-button></div></ons-row><div class='content'><p class='ideaContainer'>"+data[i]["idea"]+"</p><p class='timestampContainer'>"+dateFromObjectId(data[i]["_id"])+"</p></ons-row><ons-row><ons-col><ons-button modifier='quiet'><ons-icon icon='fa-heart' style='color: gray;' class='left-icon'></ons-button>"+data[i]["likes"]+"</ons-col><ons-col><div align='right'><ons-button modifier='quiet'><ons-icon icon='fa-check-circle' style='color: gray;' class='right-icon'></ons-icon></ons-button></div></ons-col></ons-row></div></ons-card>";
+                } }
+                else{
+
+                  divCardsBucket.innerHTML = '<p align="center">Nothing here yet! Add ideas to your Bucket Twist and see them here.</p>';
+                }          
+    },
+    error: function(data) {
+                //console.log('couldn\'t load news, check the api');
+                //window.location.href = "/errorrrrr";
+    }
+        
+    });
+  }
+  //UI functions
+
+  $(".search-input").on('keyup', function (e) {      
+    search_parameter = document.getElementById('search-input').value;  
+      if (search_parameter.length>=3) {
+        if(e.keyCode == 13){ this.blur(); }  
+       searchForKeyword(search_parameter);
+        } else {
+          divCards.innerHTML = '';
+        }      
+  });
+
+  //Pull hooks and animations
+  ons.ready(function() {
+
+    var pullHookFeed = document.getElementById('pull-hook-feed');
+    var pullHookBucket = document.getElementById('pull-hook-bucket');  
+
+    $(function() {  
+          $( "#bucketCardsHolder" ).sortable({
+              placeholder: "ui-sortable-placeholder", 
+              handle: ".handle",
+              scrollSensitivity: 40,
+              scrollSpeed: 30,
+              axis: "y",
+              revert: 200,
+              start: function( event, ui ) {
+                $("#pull-hook-bucket").attr("disabled","True");
+                var cardHeight = $('.handle').parents().eq(4).css('height');
+                var cardWidth = $('.handle').parents().eq(4).css('width');
+                //$('.ui-sortable-placeholder').css('padding', (parseInt(cardHeight, 10)/2+'px') + ' ' + (parseInt(cardWidth, 10)/2+'px') );
+              },
+              stop: function( event, ui ) {
+                $("#pull-hook-bucket").removeAttr('disabled');
+              }
+          });  
+    });  
+
+    $( ".selector" ).on( "sortstart", function( event, ui ) {} );
+    $( ".selector" ).on( "sortstop", function( event, ui ) {} );
+    //var handle = $( ".selector" ).sortable( "option", "handle" );
+    //$( ".selector" ).sortable( "option", "handle", ".handle" );
+
+
+
+    pullHookFeed.addEventListener('changestate', function(event) {
+      var message = '';
+
+      switch (event.state) {
+        case 'initial':
+          message = '<ons-icon icon="fa-arrow-down"></ons-icon>';
+          break;
+        case 'preaction':
+          message = '<ons-icon icon="fa-arrow-up"></ons-icon>';
+          break;
+        case 'action':
+          message = '<ons-icon icon="ion-load-b" spin size="30px"></ons-icon>';
+          break;
+      }
+
+      pullHookFeed.innerHTML = message;
+      });
+
+      pullHookFeed.onAction = function (done) {
+        setTimeout(function() {
+          refreshTheFeed();
+          done();
+        }, 600);
+      }
+
+      pullHookBucket.addEventListener('changestate', function(event) {
+      var message = '';
+
+      switch (event.state) {
+        case 'initial':
+          message = '<ons-icon icon="fa-arrow-down"></ons-icon>';
+          break;
+        case 'preaction':
+          message = '<ons-icon icon="fa-arrow-up"></ons-icon>';
+          break;
+        case 'action':
+          message = '<ons-icon icon="ion-load-b" spin size="30px"></ons-icon>';
+          break;
+      }
+
+      pullHookBucket.innerHTML = message;
+      });
+
+      pullHookBucket.onAction = function (done) {
+        setTimeout(function() {
+          getUserIdeas(username);
+          done();
+        }, 600);
+      } 
+  });
+
+
+  }
+</script>
+</html>
